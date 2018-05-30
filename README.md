@@ -2,7 +2,7 @@
 
 ## What?
 
-Iguan it is a light, high-performance, secure and flexible way to organize Event Driven Architecture in small or medium IT-projects with minimum intervention to current infrastructure.
+[Iguan](https://github.com/IguanREQ) it is a light, high-performance, secure and flexible way to organize Event Driven Architecture in small or medium IT-projects with minimum intervention to current infrastructure.
 
 ## How?
 

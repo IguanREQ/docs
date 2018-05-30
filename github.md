@@ -1,4 +1,4 @@
-# Github
+# GitHub
 
 We located [here](https://github.com/IguanREQ). 
 

@@ -153,15 +153,15 @@ Register subscriber on server.
 {% api-method-spec %}
 {% api-method-request %}
 {% api-method-body-parameters %}
-{% api-method-parameter name="subjects" type="array" required=false %}
+{% api-method-parameter name="subjects" type="array" required=true %}
 `SubjectNotifyInfo[]`
 {% endapi-method-parameter %}
 
-{% api-method-parameter name="eventMask" type="string" required=false %}
+{% api-method-parameter name="eventMask" type="string" required=true %}
 `Event.name` mask for wich subscriber will listening
 {% endapi-method-parameter %}
 
-{% api-method-parameter name="sourceTag" type="string" required=false %}
+{% api-method-parameter name="sourceTag" type="string" required=true %}
 application source tag
 {% endapi-method-parameter %}
 {% endapi-method-body-parameters %}
@@ -181,5 +181,35 @@ application source tag
 {% endapi-method-spec %}
 {% endapi-method %}
 
+{% api-method method="post" host="" path="" %}
+{% api-method-summary %}
+Event.Fire
+{% endapi-method-summary %}
 
+{% api-method-description %}
+Emit event.
+{% endapi-method-description %}
+
+{% api-method-spec %}
+{% api-method-request %}
+{% api-method-path-parameters %}
+{% api-method-parameter name="event" type="object" required=true %}
+`EventDescriptor` to emit.
+{% endapi-method-parameter %}
+{% endapi-method-path-parameters %}
+{% endapi-method-request %}
+
+{% api-method-response %}
+{% api-method-response-example httpCode=200 %}
+{% api-method-response-example-description %}
+
+{% endapi-method-response-example-description %}
+
+```
+{"id": <source_id>, "error": null, "reason": null}
+```
+{% endapi-method-response-example %}
+{% endapi-method-response %}
+{% endapi-method-spec %}
+{% endapi-method %}
 

@@ -20,6 +20,20 @@ Token can be separated on domains by dot \(`.`\) only.
 
 Payload is piece of data wich must be caught by consumers. It can contain ID of DB entity which was changed or entire entity. Structure of payload is defined by emitter. You can automatically wrap/unwrap payload into own object of some class.
 
+### Emitter
+
+ A part of system that produce events.
+
+### Subscriber 
+
+A part of system that consume events _\(also known like listener or consumer, both the same\)_.
+
+Subscribers can listen for multiple events by event name mask. Listeners will be notified in case of:
+
+1. Full matching with excepted name and incoming event token.
+2. Partial matching with wildcards \(`*`\). Wildcard are can be any of one event name domain. For example, a name like `entity.*` means, that all subscriber for `entity.<any_word>` and even`entity.<any_word>.action` will receive event.
+3. Partial matching with sharp \(`#`\). Unlike wildcard, sharp will replace all remains name domain on right side. For example, a name like `entity.#` means, that all subscriber for `entity.attribute.action` or `entity.attribute` will receive event.
+
 ## Auth
 
 Before client can interact with server, client must provide auth info. 
@@ -45,13 +59,15 @@ ID is counting as a bitwise `or` operation with presented auth component types:
 
 ## Signing
 
-Each event by server can be signed using SHA256 with server private key. Each client that have public key can verify incoming event that it was from trusted source.
+Each event by server can be signed using RSA SHA256 with server private key. Each client that have public key can verify incoming event that it was from trusted source.
 
 We categorically against for secret token that shared between server and clients, because any subscriber is free to pass same token to another subscriber with broken or malware data.
 
 ### Web Hook
 
 Each web hook event content are signed. For signing we use concatenation of `Iguan-Dest-Host` header and whole request body. Sign is on `Iguan-Sign` header. 
+
+## Interaction
 
 {% api-method method="get" host="" path="" %}
 {% api-method-summary %}

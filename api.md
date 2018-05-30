@@ -141,6 +141,12 @@ _Also, pair define a way in which server take a decision of choosing candidates
 
 ### Server JSON RPC Methods
 
+_Next we define only fields for parameters that have to be in `params` field of JSON RPC string._ 
+
+_Note: `params` MUST be array with only one element: params-object._
+
+In case of errors, server MUST fill `error` field in response with error description.
+
 {% api-method method="post" host="" path="" %}
 {% api-method-summary %}
 Event.Register

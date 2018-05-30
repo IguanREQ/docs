@@ -69,22 +69,102 @@ Each web hook event content are signed. For signing we use concatenation of `Igu
 
 ## Interaction
 
-{% api-method method="get" host="" path="" %}
-{% api-method-summary %}
+### Protocol
 
+ A basic client-server communication is based on raw sockets \(tls supported\), but quickly can be extended for HTTP\(s\).
+
+### Client Payload
+
+Regardless of transport way, payload format MUST match the following rules.
+
+For socket connections, first message MUST started with auth preamble:
+
+1. First byte - auth type byte \(id of used auth\). Now we using three lowers bits.
+2. Next, if  AUTH\_TYPE\_LOGIN bit present - first byte it's a login size in bytes, next - N bytes of login \(N from 1 to 255\).
+3. Next, if AUTH\_TYPE\_PASSWORD bit present - first byte it's a password size in bytes, next - N bytes of password \(N from 1 to 127\).
+
+Next messages MUST omit the auth preamble, just:
+
+1. Payload data.
+2. LF byte.
+
+Payload data MUST be JSON RPC string with next fields:
+
+* `method` - remote method name
+* `id` - generated message identity
+* `params` - method arguments
+
+### Data structures
+
+We used next structures for organize our client-server communication. All fields are required.
+
+#### EventBundle
+
+_Contain event-related data._
+
+* _class_ - `string` - an event source class for wrap/unwrap objects
+* _name_ - `string` - event name
+* _payload_ - `mixed` - event payload data, must be serializable 
+* _payloadType_ - `mixed` - event payload data type in source client language
+
+#### EventDescriptor
+
+_Contain event meta information about emitter._
+
+* _sourceTag_ - `string` - application/script tag that raised event
+* _event_ - `array` - an EventBundle packed into assoc array
+* _firedAt_ - `int` - a timestamp of event dispatching in microseconds since UNIX epoch
+* _delay_ - `int` - delay before event must be caught by subscribers
+* _dispatcher_ - `int` - a dispatcher language identifier. \(`PHP=1`\)
+
+#### SubjectNotifyInfo
+
+_Contain a description for way in which subscriber will be notified._
+
+* _destType_ - `int` - a subject notify way identifier. \(`CLI=1`, `HTTP=2`\)
+* _destPath_ - `UriPair` - file path or endpoint location where is listener located
+* _sourceHash_ - `string` - a way uniq identifier \(_unused_\)
+
+#### UriPair
+
+_Explode URI for two parts: fluent and app-based. First one is useful for detecting same application launched on multiples domains or sub-paths. Second one is constant part of each URI which available for current app._  
+
+_Also, pair define a way in which server take a decision of choosing candidates for invoking. If server have N same subscriptions \(same tag, same event name\), there is a some problem in choosing: which one must be invoke? One or all?  To help server, pair can bring some addition information by specifying invoke kind. If pair says that need to invoke only one, server will choose ONE subscription base on next criteria: `EventDescriptor.sourceTag`, `Event.name` matched incoming one and `UriPair.appPair`_
+
+ _In other words, if you have TWO same applications started on TWO different domains: `example.com/some`and `some.com/example`and event handler is on `index.php` and you want to guarantee that only one handler receive same event, you have to separate URI like this structure._
+
+* _fluentPart_- `string` -   domain-dependent part, i.e. app root. \(`example.com/some/` or `some.com/example/` depend on where is subscription made\)
+* _appPart_ - `string` - app-dependent part. \(`index.php`\)
+* _invokeKind_ - `int` - invoking strategy. There is two constants:
+  * `UriPair.INVOKE_KIND_ONCE = 1` - only one subscriber will be notified
+  * `UriPair.INVOKE_KIND_EACH = 2` - each subscriber will be notified
+
+### Server JSON RPC Methods
+
+{% api-method method="post" host="" path="" %}
+{% api-method-summary %}
+Event.Register
 {% endapi-method-summary %}
 
 {% api-method-description %}
-
+Register subscriber on server.
 {% endapi-method-description %}
 
 {% api-method-spec %}
 {% api-method-request %}
-{% api-method-path-parameters %}
-{% api-method-parameter name="" type="string" required=false %}
-
+{% api-method-body-parameters %}
+{% api-method-parameter name="subjects" type="array" required=false %}
+`SubjectNotifyInfo[]`
 {% endapi-method-parameter %}
-{% endapi-method-path-parameters %}
+
+{% api-method-parameter name="eventMask" type="string" required=false %}
+`Event.name` mask for wich subscriber will listening
+{% endapi-method-parameter %}
+
+{% api-method-parameter name="sourceTag" type="string" required=false %}
+application source tag
+{% endapi-method-parameter %}
+{% endapi-method-body-parameters %}
 {% endapi-method-request %}
 
 {% api-method-response %}
@@ -94,10 +174,12 @@ Each web hook event content are signed. For signing we use concatenation of `Igu
 {% endapi-method-response-example-description %}
 
 ```
-
+{"id": <source_id>, "error": null, "reason": null}
 ```
 {% endapi-method-response-example %}
 {% endapi-method-response %}
 {% endapi-method-spec %}
 {% endapi-method %}
+
+
 
